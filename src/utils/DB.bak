@@ -1,0 +1,134 @@
+const AWS = require("aws-sdk");
+const ids = require('shortid');
+
+AWS.config.update({
+  region: "us-west-2",
+  endpoint: "http://localhost:8000"
+});
+
+const client = new AWS.DynamoDB.DocumentClient();
+
+// CRUD for the 4 main tables, stores, items, orders, users
+const store = {
+  create(data) {
+    return new Promise((resolve, reject) => {
+      let id = 'st' + ids.generate();
+
+      client.put({
+        TableName: 'stores',
+        Item: {
+          'storeid': id,
+          'name': data.name,
+          'address1': data.address1,
+          'address2': data.address2,
+          'city': data.city,
+          'state': data.state,
+          'zip': data.zip,
+          'desc': data.desc,
+          'hours': data.hours
+        }
+      }, function(err, data) {
+        if (err) {
+          console.error("Unable to add item. Error JSON:", JSON.stringify(err, null, 2));
+          reject(err);
+        } else {
+          resolve(id);
+        }
+      });
+
+    });
+  },
+
+  read(storeid) {
+    return new Promise((resolve, reject) => {
+
+      client.get({
+        TableName: 'stores',
+        Key: {
+          storeid: storeid
+        }
+      }, function(err, data) {
+        if (err) {
+          console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
+          reject(err);
+        } else {
+          resolve(data);
+        }
+      });
+
+    });
+  },
+
+  update(storied, zip, mods) { // Up to 3 levels of recursion for now
+    let que = [];
+    createParam = (key, value) => {
+      que.push({
+        TableName: 'stores',
+        Key: {
+          'storeid': storied
+        },
+        UpdateExpression: 'set ' + key + ' = :a',
+        ExpressionAttributeValues: {
+          ':a': value
+        }
+      });
+    }
+
+    return new Promise((resolve, reject) => {
+      Object.keys(mods).forEach(key => {
+        let value = mods[key];
+
+        if (typeof value == "object") {
+          //console.log(key, Object.keys(value));
+          Object.keys(value).forEach(nKey => {
+            let nValue = value[nKey];
+            let dbKey = key + '.' + nKey;
+
+            if (typeof nValue == "object") {
+              Object.keys(nValue).forEach(tKey => {
+                let tValue = nValue[tKey];
+                let tdbKey = dbKey + '.' + tKey;
+                //console.log(tKey, tdbKey, tValue);
+
+                createParam(tdbKey, tValue);
+              });
+
+            } else {
+              createParam(dbKey, nValue);
+            }
+
+          });
+        } else {
+
+          createParam(key, value);
+        }
+      });
+
+      //console.log(que);
+      que.forEach((update, key) => {
+
+        client.update(update, function(err, data) {
+          if (err) {
+            console.error("Unable to update item. Error JSON:", JSON.stringify(err, null, 2));
+            reject(err);
+          } else {
+
+            if (key+1 >= que.length) {
+              console.log('ya did good kid');
+              resolve();
+            }
+          }
+        });
+
+      });
+
+    });
+  },
+
+  delete(storeID) {
+    return null;
+  }
+}
+
+const DB = { store };
+module.exports = DB;
