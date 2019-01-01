@@ -1,25 +1,23 @@
 import express from 'express';
-import Store from '../classes/Store';
-import { dynoSani } from '../utils/Utils';
+import Item from '../classes/Item';
+import Accessor from '../database/Accessor';
+let ItemDB = new Accessor('items', 'itemID', 'storeID');
 
 /*
   NO INPUT SANITATION HAS BEEN IMPLEMENTED YET!
 */
 
-export default class Stores {
+export default class Items {
   constructor(auth) {
     let router = express.Router();
 
-    router.get('/find/:lat:lng', (req, res) => {
-      // stub
-    });
-
-    router.get('/:storeID', auth, (req, res) => {
-      new Store({
+    router.get('/:storeID/:itemID', (req, res) => {
+      new Item({
+        itemID: req.params.itemID,
         storeID: req.params.storeID
-      }).then(store => {
+      }).then(item => {
 
-        res.status(200).json(store.data);
+        res.status(200).json(item.data);
 
       }).catch(err => {
 
@@ -30,52 +28,49 @@ export default class Stores {
       });
     });
 
-    router.post('/', auth, (req, res) => {
-      req.body.owner = "null" // This should be grabbed from the auth token, and then check if the user already has a store
-
-      new Store(req.body).then(id => {
+    router.post('/:storeID', auth, (req, res) => {
+      req.body.storeID = req.params.storeID;
+      new Item(req.body).then(id => {
 
         res.status(201).json({
-          storeID: id
+          itemID: id
         });
 
       }).catch(err => {
 
-        console.error(err);
         res.status(400).json({
           error: err
         });
 
       });
-
     });
 
-    router.put('/:storeID', auth, (req, res) => {
-      new Store({
+    router.put('/:storeID/:itemID', auth, (req, res) => { // This is ugly, but it would require a re-write of how the DB Update method works
+      new Item({
         storeID: req.params.storeID
-      }).then(store => {
+      }).then(item => {
         req.body = dynoSani(req.body);
 
         let keys = Object.keys(req.body);
         for (let i = 0; i < keys.length; i++) {
           let key = keys[i];
           
-          if (store.data[key]) {
+          if (item.data[key]) {
 
-            store.que[key] = req.body[key];
+            item.que[key] = req.body[key];
 
           } else {
             res.status(400).json({
               error: 'Bad Modification'
             });
-            store.flushQue();
+            item.flushQue();
 
             break;
           }
 
           if (i == (keys.length - 1)) {
 
-            store.commitQue().then(() => {
+            item.commitQue().then(() => {
               res.status(200).send();
             }).catch(err => {
               res.status(400).json({
@@ -86,7 +81,7 @@ export default class Stores {
           }
         }
         
-      }).catch(err => {
+      }).catch(() => {
 
         res.status(400).json({
           error: err
@@ -95,20 +90,18 @@ export default class Stores {
       });
     });
 
-    router.delete('/:storeID', auth, (req, res) => {
-      // stub
-    });
+    router.delete('/:storeID/:itemID', auth, (req, res) => {
+      ItemDB.delete(req.params.itemID, req.params.storeID).then(() => {
 
-    router.get('/sales/:storeID', auth, (req, res) => {
+        res.status(200).send();
 
-    });
+      }).catch(err => {
 
-    router.get('/fines/:storeID', auth, (req, res) => {
+        res.status(400).json({
+          error: err
+        });
 
-    });
-
-    router.get('/tips/:storeID', auth, (req, res) => {
-
+      });
     });
 
     return router;

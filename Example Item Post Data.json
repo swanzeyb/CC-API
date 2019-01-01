@@ -1,0 +1,13 @@
+{
+  "name": "Latte",
+  "desc": "foamy desire.",
+  "price": 300,
+  "mods": {
+    "req": {
+      "size": ["8oz", "12oz", "16oz", "20oz"]
+    },
+    "not": {
+      "milk": ["2%", "Skim"]
+    }
+  }
+}

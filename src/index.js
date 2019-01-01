@@ -2,6 +2,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import jwt from 'express-jwt';
 import jwks from 'jwks-rsa';
+require('dotenv').config(); // doesn't work with babel-watch, maybe works on dist builds?
 
 let jwtCheck = jwt({ // Our authentication middleware, only users who have passed a valid bearer token will pass this middleware
   secret: jwks.expressJwtSecret({
@@ -16,11 +17,17 @@ let jwtCheck = jwt({ // Our authentication middleware, only users who have passe
 });
 
 let app = express();
+app.use(bodyParser.json()); // for parsing application/json
+app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
+app.use(express.json()); // read json post data
+
 // Now we import our routes
-import Stores from './routes/stores';
+import Stores from './routes/Stores';
+import Items from './routes/Items';
 
 // Begin assigning the routes
-let storeRoutes = new Stores(app, jwtCheck);
+app.use('/stores', new Stores(jwtCheck));
+app.use('/items', new Items(jwtCheck));
 
 // Start
 let port = process.env.PORT || 8080;

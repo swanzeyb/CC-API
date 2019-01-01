@@ -1,0 +1,141 @@
+import AWS from 'aws-sdk';
+import ids from 'shortid';
+import { dynoSani } from '../utils/Utils';
+
+class Store {
+  constructor() {
+    AWS.config.update({
+      region: process.env.AWS_REGION || "us-west-2",
+      endpoint: process.env.AWS_ENDPOINT || "http://localhost:8000"
+    });
+    
+    this.client = new AWS.DynamoDB.DocumentClient();
+  }
+
+  create(data) {
+    return new Promise((resolve, reject) => {
+      let id = 'st' + ids.generate();
+
+      this.client.put({
+        TableName: 'stores',
+        Item: {
+          'storeid': id,
+          'nick': data.name,
+          'info': data.desc,
+          'address': data.address,
+          'hours': data.hours,
+          'owner': data.owner
+        }
+      }, function(err, data) {
+        if (err) {
+          reject(JSON.stringify(err, null, 2));
+        } else {
+          resolve(id);
+        }
+      });
+
+    });
+  }
+
+  read(storeid) {
+    return new Promise((resolve, reject) => {
+
+      this.client.get({
+        TableName: 'stores',
+        Key: {
+          storeid: storeid
+        }
+      }, function(err, data) {
+        if (err) {
+          reject(JSON.stringify(err, null, 2));
+        } else {
+          resolve(data);
+        }
+      });
+
+    });
+  }
+
+  update(storied, mods) { // Up to 3 levels of recursion for now
+    return new Promise((resolve, reject) => {
+      let que = [];
+      let createParam = (key, value) => {
+        que.push({
+          TableName: 'stores',
+          Key: {
+            'storeid': storied
+          },
+          UpdateExpression: 'set ' + key + ' = :a',
+          ExpressionAttributeValues: {
+            ':a': value
+          }
+        });
+      }
+
+      Object.keys(mods).forEach(key => {
+        let value = mods[key];
+
+        if (typeof value == "object") {
+          Object.keys(value).forEach(nKey => {
+            let nValue = value[nKey];
+            let dbKey = key + '.' + nKey;
+
+            if (typeof nValue == "object") {
+              Object.keys(nValue).forEach(tKey => {
+                let tValue = nValue[tKey];
+                let tdbKey = dbKey + '.' + tKey;
+
+                createParam(tdbKey, tValue);
+              });
+
+            } else {
+              createParam(dbKey, nValue);
+            }
+
+          });
+        } else {
+
+          createParam(key, value);
+        }
+      });
+
+      que.forEach((update, key) => {
+
+        this.client.update(update, function(err, data) {
+          if (err) {
+            reject(JSON.stringify(err, null, 2));
+          } else {
+
+            if (key+1 >= que.length) {
+              resolve();
+            }
+          }
+        });
+
+      });
+
+    });
+  }
+
+  delete(storeid) {
+    return new Promise((resolve, reject) => {
+      
+      this.client.delete({
+        TableName: 'stores',
+        Key: {
+          'storeid': storeid
+        }
+      }, function(err, data) {
+        if (err) {
+          reject(JSON.stringify(err, null, 2));
+        } else {
+          resolve(data);
+        }
+      });
+
+    });
+  }
+}
+
+let StoreDB = new Store();
+export default StoreDB;

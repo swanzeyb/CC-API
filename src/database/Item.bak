@@ -1,0 +1,149 @@
+import AWS from 'aws-sdk';
+import ids from 'shortid';
+import { dynoSani } from '../utils/Utils';
+
+class Item {
+  constructor() {
+    AWS.config.update({
+      region: process.env.AWS_REGION || "us-west-2",
+      endpoint: process.env.AWS_ENDPOINT || "http://localhost:8000"
+    });
+    
+    this.client = new AWS.DynamoDB.DocumentClient();
+  }
+
+  create(data) {
+    data = dynoSani(data);
+    return new Promise((resolve, reject) => {
+      let id = 'it' + ids.generate();
+
+      this.client.put({
+        TableName: 'items',
+        Item: {
+          'itemid': id,
+          'storeid': data.storeID,
+          'nick': data.nick,
+          'info': data.info,
+          'price': data.price,
+          'mods': data.mods
+        }
+      }, function(err, data) {
+        if (err) {
+          reject(JSON.stringify(err, null, 2));
+        } else {
+          resolve(id);
+        }
+      });
+
+    });
+  }
+
+  read(itemid, storeid) {
+    return new Promise((resolve, reject) => {
+
+      this.client.get({
+        TableName: 'items',
+        Key: {
+          'itemid': itemid,
+          'storeid': storeid
+        }
+      }, function(err, data) {
+        if (err) {
+          reject(JSON.stringify(err, null, 2));
+        } else {
+          resolve(data['Item']);
+        }
+      });
+
+    });
+  }
+
+  update(itemid, storeid, mods) {
+    return new Promise((resolve, reject) => {
+      let alpha = [":a", ":b", ":c", ":d", ":e", ":f", ":g", ":h", ":i", ":j", ":k", ":l", ":m", ":n", ":o", ":p",
+      ":q", ":r", ":s", ":t", ":u", ":v", ":w", ":x", ":y", ":z"];
+      let index = 0;
+      let updateStr = 'set '; // Ahh, the query language for the non query language database
+      let updateObj = {};
+  
+      let addItem = (key, value) => {
+        let dbKey = alpha[index];
+        index++;
+  
+        updateStr = updateStr + key + '=' + dbKey + ','
+        updateObj[dbKey] = value;
+      }
+  
+      let finish = () => {
+        updateStr = updateStr.slice(0, -1);
+        let params = {
+          TableName: 'items',
+          Key: {
+            'itemid': itemid,
+            'storeid': storeid
+          },
+          UpdateExpression: updateStr,
+          ExpressionAttributeValues: updateObj
+        }
+        console.log(updateStr, updateObj);
+        this.client.update(params, function(err, data) {
+          if (err) {
+            reject(JSON.stringify(err, null, 2));
+          } else {
+            resolve();
+          }
+        });
+      }
+  
+      let level = 0;
+      let goIn = (obj, previousKey) => {
+        previousKey = previousKey || '';
+        let thisLevel = level;
+        let length = Object.keys(obj).length - 1;
+        //console.log(level, obj, previousKey);
+        //console.log(index, length, thisLevel, level);
+  
+        Object.keys(obj).forEach((key, index) => {
+  
+          if (Object.prototype.toString.call(obj[key]) == '[object Object]') {
+            level++;
+            goIn(obj[key], previousKey + key + '.');
+          } else {
+            // If it has reached the end of the obj and it's at the last nested obj
+
+            addItem(previousKey + key, obj[key]);
+            if (index == length && thisLevel == level) {
+              finish();
+            }
+          }
+  
+        });
+      }
+
+      goIn(mods);  
+    });
+  }
+
+  delete(itemid, storeid) {
+    return new Promise((resolve, reject) => {
+      
+      this.client.delete({
+        TableName: 'items',
+        Key: {
+          'itemid': itemid,
+          'storeid': storeid
+        }
+      }, function(err, data) {
+        if (err) {
+          reject(JSON.stringify(err, null, 2));
+        } else {
+          resolve(data);
+        }
+      });
+
+    });
+  }
+}
+
+let ItemDB = new Item();
+export default ItemDB;
