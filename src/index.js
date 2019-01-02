@@ -21,13 +21,24 @@ app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 app.use(express.json()); // read json post data
 
+import moment from 'moment';
+app.use((req, res, next) => {
+  let time = moment().toISOString();
+  console.log(req.method+' '+req.path);
+  next();
+});
+
 // Now we import our routes
 import Stores from './routes/Stores';
 import Items from './routes/Items';
+import Orders from './routes/Orders';
+import Users from './routes/Users';
 
 // Begin assigning the routes
 app.use('/stores', new Stores(jwtCheck));
 app.use('/items', new Items(jwtCheck));
+app.use('/orders', new Orders(jwtCheck));
+app.use('/users', new Users(jwtCheck));
 
 // Start
 let port = process.env.PORT || 8080;

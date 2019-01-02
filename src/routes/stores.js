@@ -1,6 +1,5 @@
 import express from 'express';
 import Store from '../classes/Store';
-import { dynoSani } from '../utils/Utils';
 
 /*
   NO INPUT SANITATION HAS BEEN IMPLEMENTED YET!
@@ -54,7 +53,6 @@ export default class Stores {
       new Store({
         storeID: req.params.storeID
       }).then(store => {
-        req.body = dynoSani(req.body);
 
         let keys = Object.keys(req.body);
         for (let i = 0; i < keys.length; i++) {
@@ -96,18 +94,18 @@ export default class Stores {
     });
 
     router.delete('/:storeID', auth, (req, res) => {
-      // stub
+      
     });
 
-    router.get('/sales/:storeID', auth, (req, res) => {
-
-    });
-
-    router.get('/fines/:storeID', auth, (req, res) => {
+    router.get('/:storeID/sales', auth, (req, res) => {
 
     });
 
-    router.get('/tips/:storeID', auth, (req, res) => {
+    router.get('/:storeID/fines', auth, (req, res) => {
+
+    });
+
+    router.get('/:storeID/tips', auth, (req, res) => {
 
     });
 

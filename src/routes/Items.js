@@ -28,6 +28,10 @@ export default class Items {
       });
     });
 
+    router.get('/:storeID/all', (req, res) => {
+
+    });
+
     router.post('/:storeID', auth, (req, res) => {
       req.body.storeID = req.params.storeID;
       new Item(req.body).then(id => {
@@ -45,11 +49,15 @@ export default class Items {
       });
     });
 
-    router.put('/:storeID/:itemID', auth, (req, res) => { // This is ugly, but it would require a re-write of how the DB Update method works
+    router.patch('/:storeID/:itemID/mark', auth, (req, res) => {
+      
+    });
+
+    router.put('/:storeID/:itemID', auth, (req, res) => {
       new Item({
+        itemID: req.params.itemID,
         storeID: req.params.storeID
       }).then(item => {
-        req.body = dynoSani(req.body);
 
         let keys = Object.keys(req.body);
         for (let i = 0; i < keys.length; i++) {
@@ -81,7 +89,7 @@ export default class Items {
           }
         }
         
-      }).catch(() => {
+      }).catch((err) => {
 
         res.status(400).json({
           error: err

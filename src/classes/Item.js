@@ -19,14 +19,14 @@ export default class Item {
           reject(err);
         });
       } else {
-  
+        
         // DB cannot have null values
         data.storeID = data.storeID || reject('No Store');
         data.name = data.name || reject('No Item Name');
         data.desc = data.desc || reject('No Desc');
         data.price = data.price || reject('No Price');
         data.mods = data.mods || {};
-
+        
         ItemDB.create(data).then(id => {
           this.data = data;
 

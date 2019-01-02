@@ -1,6 +1,5 @@
 import AWS from 'aws-sdk';
 import ids from 'shortid';
-import { dynoSani } from '../utils/Utils';
 
 AWS.config.update({
   region: process.env.AWS_REGION || "us-west-2",
@@ -29,15 +28,14 @@ export default class Accessor {
       input[this.id] = id;
       
       Object.keys(data).forEach(key => {
-        input[key.toString()] = data[key];
+        input[key] = data[key];
       });
-
+      
       return input;
     }
   }
 
   create(data) {
-    data = dynoSani(data);
     return new Promise((resolve, reject) => {
       let id = ids.generate();
 
@@ -72,13 +70,22 @@ export default class Accessor {
     });
   }
 
-  update(ID, KEY, mods) {
+  update(ID, KEY, data) {
     return new Promise((resolve, reject) => {
       let alpha = [":a", ":b", ":c", ":d", ":e", ":f", ":g", ":h", ":i", ":j", ":k", ":l", ":m", ":n", ":o", ":p",
       ":q", ":r", ":s", ":t", ":u", ":v", ":w", ":x", ":y", ":z"];
       let index = 0;
       let updateStr = 'set '; // Ahh, the query language for the non query language database
       let updateObj = {};
+      let attrNames = {};
+
+      let sudoName = (key) => {
+        let sudo = key.slice(0, 3);
+        sudo = '#' + sudo;
+
+        attrNames[sudo] = key;
+        return sudo;
+      }
   
       let addItem = (key, value) => {
         let dbKey = alpha[index];
@@ -88,21 +95,30 @@ export default class Accessor {
         updateObj[dbKey] = value;
       }
 
-      Object.keys(mods).forEach((levelOne) => {
+      Object.keys(data).forEach((levelOne) => { // Javascript breaks trying to use recursive functions, I tried for like 3 hours
         
-        if (Object.prototype.toString.call(mods[levelOne]) == '[object Object]') {
+        if (Object.prototype.toString.call(data[levelOne]) == '[object Object]') {
 
-          Object.keys(mods[levelOne]).forEach((levelTwo) => {
-            console.log(levelOne, levelTwo, mods[levelOne], mods[levelOne][levelTwo]);
-            if (Object.prototype.toString.call(mods[levelOne][levelTwo]) == '[object Object]') {
+          Object.keys(data[levelOne]).forEach((levelTwo) => {
+            if (Object.prototype.toString.call(data[levelOne][levelTwo]) == '[object Object]') {
               
+              Object.keys(data[levelOne][levelTwo]).forEach((levelThree) => {
+                if (Object.prototype.toString.call(data[levelOne][levelTwo][levelThree]) == '[object Object]') {
+                  console.error('Attempted to update entry with an object that contains more than a 3rd deep nested object', ID, KEY, data);
+                  reject('Object nested past more than 3 layers');
+                } else {
+                  addItem(sudoName(levelOne) + '.' + sudoName(levelTwo) + '.' + sudoName(levelThree), data[levelOne][levelTwo][levelThree]);
+                }
+    
+              });
+
             } else {
-              addItem(levelOne + '.' + levelTwo, mods[levelOne][levelTwo]);
+              addItem(sudoName(levelOne) + '.' + sudoName(levelTwo), data[levelOne][levelTwo]);
             }
 
           });
         } else {
-          addItem(levelOne, mods[levelOne]);
+          addItem(sudoName(levelOne), data[levelOne]);
         }
       });
 
@@ -111,10 +127,10 @@ export default class Accessor {
         TableName: this.table,
         Key: this.gen(ID, KEY),
         UpdateExpression: updateStr,
+        ExpressionAttributeNames: attrNames,
         ExpressionAttributeValues: updateObj
       };
-
-      console.log(params);
+      
       client.update(params, function(err) {
         if (err) {
           reject(JSON.stringify(err, null, 2));

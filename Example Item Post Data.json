@@ -6,7 +6,7 @@
     "req": {
       "size": ["8oz", "12oz", "16oz", "20oz"]
     },
-    "not": {
+    "opt": {
       "milk": ["2%", "Skim"]
     }
   }

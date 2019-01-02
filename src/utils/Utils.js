@@ -87,6 +87,7 @@ export function validateString(str) {
 }
 
 export function dynoSani(obj) {
+  console.log('SOMEONE CALLED ME FUCK OFF');
   let res = {};
   let replace = {
     'name': 'nick',
