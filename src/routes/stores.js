@@ -1,5 +1,6 @@
 import express from 'express';
 import Store from '../classes/Store';
+import getNearest from '../utils/Finder';
 
 /*
   NO INPUT SANITATION HAS BEEN IMPLEMENTED YET!
@@ -8,9 +9,24 @@ import Store from '../classes/Store';
 export default class Stores {
   constructor(auth) {
     let router = express.Router();
+    
+    router.get('/find/:lat,:lng', (req, res) => {
+      getNearest(req.params.lat, req.params.lng, 20, 10).then(data => {
 
-    router.get('/find/:lat:lng', (req, res) => {
-      // stub
+        res.status(200).json(data);
+
+      }).catch(err => {
+
+        if (Object.prototype.toString.call(err) == '[object Error]') {
+          console.error(err);
+          res.status(500).send();
+        } else {
+          res.status(400).json({
+            error: err
+          }); 
+        }
+
+      });
     });
 
     router.get('/:storeID', auth, (req, res) => {
@@ -22,9 +38,14 @@ export default class Stores {
 
       }).catch(err => {
 
-        res.status(400).json({
-          error: err
-        });
+        if (Object.prototype.toString.call(err) == '[object Error]') {
+          console.error(err);
+          res.status(500).send();
+        } else {
+          res.status(400).json({
+            error: err
+          }); 
+        }
 
       });
     });
@@ -40,10 +61,14 @@ export default class Stores {
 
       }).catch(err => {
 
-        console.error(err);
-        res.status(400).json({
-          error: err
-        });
+        if (Object.prototype.toString.call(err) == '[object Error]') {
+          console.error(err);
+          res.status(500).send();
+        } else {
+          res.status(400).json({
+            error: err
+          }); 
+        }
 
       });
 
@@ -76,9 +101,16 @@ export default class Stores {
             store.commitQue().then(() => {
               res.status(200).send();
             }).catch(err => {
-              res.status(400).json({
-                error: err
-              });
+
+              if (Object.prototype.toString.call(err) == '[object Error]') {
+                console.error(err);
+                res.status(500).send();
+              } else {
+                res.status(400).json({
+                  error: err
+                }); 
+              }
+      
             });
             
           }
@@ -86,27 +118,46 @@ export default class Stores {
         
       }).catch(err => {
 
-        res.status(400).json({
-          error: err
-        });
+        if (Object.prototype.toString.call(err) == '[object Error]') {
+          console.error(err);
+          res.status(500).send();
+        } else {
+          res.status(400).json({
+            error: err
+          }); 
+        }
 
       });
     });
 
-    router.delete('/:storeID', auth, (req, res) => {
-      
-    });
-
     router.get('/:storeID/sales', auth, (req, res) => {
+      new Store({
+        storeID: req.params.storeID
+      }).then(store => {
 
-    });
+        store.sales(req.body.start, req.body.end).then(figs => {
 
-    router.get('/:storeID/fines', auth, (req, res) => {
+          res.status(200).json(figs);
 
-    });
+        }).catch(err => {
 
-    router.get('/:storeID/tips', auth, (req, res) => {
+          console.error(err);
+          res.status(500).send();
+          
+        });
 
+      }).catch(err => {
+
+        if (Object.prototype.toString.call(err) == '[object Error]') {
+          console.error(err);
+          res.status(500).send();
+        } else {
+          res.status(400).json({
+            error: err
+          }); 
+        }
+
+      });
     });
 
     return router;

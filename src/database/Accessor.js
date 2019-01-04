@@ -25,7 +25,7 @@ export default class Accessor {
 
     this.item = (id, data) => {
       let input = {};
-      input[this.id] = id;
+      input[this.key] = id;
       
       Object.keys(data).forEach(key => {
         input[key] = data[key];
@@ -38,13 +38,13 @@ export default class Accessor {
   create(data) {
     return new Promise((resolve, reject) => {
       let id = ids.generate();
-
+      
       client.put({
         TableName: this.table,
         Item: this.item(id, data)
       }, function(err) {
         if (err) {
-          reject(JSON.stringify(err, null, 2));
+          reject(err);
         } else {
           resolve(id);
         }
@@ -61,7 +61,7 @@ export default class Accessor {
         Key: this.gen(ID, KEY)
       }, function(err, data) {
         if (err) {
-          reject(JSON.stringify(err, null, 2));
+          reject(err);
         } else {
           resolve(data['Item']);
         }
@@ -133,7 +133,7 @@ export default class Accessor {
       
       client.update(params, function(err) {
         if (err) {
-          reject(JSON.stringify(err, null, 2));
+          reject(err);
         } else {
           resolve();
         }
@@ -150,12 +150,56 @@ export default class Accessor {
         Key: this.gen(ID, KEY)
       }, function(err, data) {
         if (err) {
-          reject(JSON.stringify(err, null, 2));
+          reject(err);
         } else {
           resolve(data);
         }
       });
 
+    });
+  }
+
+  query(params) {
+    return new Promise((resolve, reject) => {
+      params.TableName = this.table;
+
+      client.query(params, function(err, data) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(data['Items']);
+        }
+      });
+      
+    });
+  }
+
+  scan(params) {
+    return new Promise((resolve, reject) => {
+      params.TableName = this.table;
+
+      client.scan(params, function(err, data) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(data['Items']);
+        }
+      });
+      
+    });
+  }
+
+  batchGet(params) {
+    return new Promise((resolve, reject) => {
+
+      client.batchGet(params, function(err, data) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(data);
+        }
+      });
+      
     });
   }
 }

@@ -1,6 +1,8 @@
 import express from 'express';
 import Item from '../classes/Item';
+import Store from '../classes/Store';
 import Accessor from '../database/Accessor';
+import { error } from '../utils/Utils';
 let ItemDB = new Accessor('items', 'itemID', 'storeID');
 
 /*
@@ -10,6 +12,26 @@ let ItemDB = new Accessor('items', 'itemID', 'storeID');
 export default class Items {
   constructor(auth) {
     let router = express.Router();
+
+    router.get('/:storeID/all', (req, res) => {
+      new Store({
+        storeID: req.params.storeID
+      }).then(store => {
+        
+        store.getItems().then(items => {
+          
+          res.status(200).json(items);
+
+        }).catch(err => {
+
+          error(err, res);
+        });
+
+      }).catch(err => {
+
+        error(err, res);
+      });
+    });
 
     router.get('/:storeID/:itemID', (req, res) => {
       new Item({
@@ -21,15 +43,8 @@ export default class Items {
 
       }).catch(err => {
 
-        res.status(400).json({
-          error: err
-        });
-
+        error(err, res);
       });
-    });
-
-    router.get('/:storeID/all', (req, res) => {
-
     });
 
     router.post('/:storeID', auth, (req, res) => {
@@ -50,7 +65,27 @@ export default class Items {
     });
 
     router.patch('/:storeID/:itemID/mark', auth, (req, res) => {
-      
+      new Item({
+        storeID: req.params.storeID,
+        itemID: req.params.itemID
+      }).then(item => {
+        let ops = {}; // no sneaky db insertion
+        ops[true] = true;
+        ops[false] = false;
+
+        item.mark(ops[req.body.state]).then(newState => {
+          res.status(200).json({
+            state: newState
+          });
+        }).catch(err => {
+
+          error(err, res);
+        });
+
+      }).catch(err => {
+
+        error(err, res);
+      });
     });
 
     router.put('/:storeID/:itemID', auth, (req, res) => {
@@ -99,16 +134,29 @@ export default class Items {
     });
 
     router.delete('/:storeID/:itemID', auth, (req, res) => {
-      ItemDB.delete(req.params.itemID, req.params.storeID).then(() => {
+      new Store({
+        storeID: req.params.storeID
+      }).then(store => {
+        
+        store.removeItem(req.params.itemID).then(() => {
+          
+          ItemDB.delete(req.params.itemID, req.params.storeID).then(() => {
 
-        res.status(200).send();
+            res.status(200).send();
+    
+          }).catch(err => {
+    
+            error(err, res);
+          });
+
+        }).catch(err => {
+
+          error(err, res);
+        });
 
       }).catch(err => {
 
-        res.status(400).json({
-          error: err
-        });
-
+        error(err, res);
       });
     });
 

@@ -1,5 +1,6 @@
+import Store from './Store';
 import Accessor from '../database/Accessor';
-let ItemDB = new Accessor('items', 'itemID', 'storeID');
+let ItemDB = new Accessor('items', 'storeID', 'itemID');
 
 export default class Item {
   constructor(data) {
@@ -11,7 +12,7 @@ export default class Item {
         this.itemID = data.itemID;
         this.storeID = data.storeID;
     
-        ItemDB.read(this.itemID, this.storeID).then(res => {
+        ItemDB.read(this.storeID, this.itemID).then(res => {
           this.data = res;
 
           resolve(this);
@@ -21,16 +22,32 @@ export default class Item {
       } else {
         
         // DB cannot have null values
-        data.storeID = data.storeID || reject('No Store');
-        data.name = data.name || reject('No Item Name');
-        data.desc = data.desc || reject('No Desc');
-        data.price = data.price || reject('No Price');
-        data.mods = data.mods || {};
+        let insert = {};
+        insert.storeID = data.storeID || reject('No Store');
+        insert.name = data.name || reject('No Item Name');
+        insert.desc = data.desc || reject('No Desc');
+        insert.price = data.price || reject('No Price');
+        insert.marked = true;
+        insert.mods = data.mods || {};
         
-        ItemDB.create(data).then(id => {
-          this.data = data;
+        ItemDB.create(insert).then(id => {
+          this.data = insert;
 
-          resolve(id);
+          new Store({
+            storeID: insert.storeID
+          }).then(store => {
+
+            store.addItem(id).then(() => {
+              resolve(id);
+            }).catch(err => {
+              reject(err);
+            });
+
+            resolve(id);
+          }).catch(err => {
+            reject(err);
+          });
+
         }).catch(err => {
           reject(err);
         });
@@ -55,6 +72,21 @@ export default class Item {
       }).catch(err => {
         reject(err);
       });
+    });
+  }
+
+  mark(state) {
+    state = state || !this.data.marked;
+    return new Promise((resolve, reject) => {
+
+      ItemDB.update({
+        marked: state
+      }).then(() => {
+        resolve(state);
+      }).catch(err => {
+        reject(err);
+      });
+
     });
   }
 

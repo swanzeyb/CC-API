@@ -21,14 +21,19 @@ export default class Orders {
 
       }).catch(err => {
 
-        res.status(400).json({
-          error: err
-        });
+        if (Object.prototype.toString.call(err) == '[object Error]') {
+          console.error(err);
+          res.status(500).send();
+        } else {
+          res.status(400).json({
+            error: err
+          }); 
+        }
 
       });
     });
 
-    router.get('/:storeID/:orderID/range', auth, (req, res) => {
+    router.get('/:storeID/range', auth, (req, res) => {
 
     });
 
@@ -50,9 +55,14 @@ export default class Orders {
 
       }).catch(err => {
 
-        res.status(400).json({
-          error: err
-        });
+        if (Object.prototype.toString.call(err) == '[object Error]') {
+          console.error(err);
+          res.status(500).send();
+        } else {
+          res.status(400).json({
+            error: err
+          }); 
+        }
 
       });
     });

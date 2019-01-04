@@ -1,50 +1,5 @@
 import fetch from 'node-fetch';
 
-Math.radians = function(degrees) { // Converts from degrees to radians
-  return degrees * (Math.PI / 180);
-};
-
-Math.degrees = function(radians) {
-  return radians * (180 / Math.PI)
-};
-
-function pointBounds(lat, lon, radMiles) { // Not reliable at large distances
-  //let radKM = radMiles * 1.609344; This is the scientifically correct conversion
-  let radKM = radMiles * 1.14263424; // But this generates better anwsers, ¯\_(ツ)_/¯
-  let rLat = Math.radians(lat);
-  let rLon = Math.radians(lon);
-
-  let radius = 6371;
-  let pRadius = radius * Math.cos(rLat);
-
-  let bounds = {
-    latMin: Math.degrees(rLat - radKM / radius),
-    latMax: Math.degrees(rLat + radKM / radius),
-    lonMin: Math.degrees(rLon - radKM / pRadius),
-    lonMax: Math.degrees(rLon + radKM / pRadius)
-  }
-
-  return bounds;
-}
-
-function distance(lat1, lng1, lat2, lng2) {
-  let x = Math.radians(lng1 - lng2) * Math.cos(Math.radians(lat1));
-  let y = Math.radians(lat1 - lat2);
-  return 3958.8 * Math.sqrt( (x*x) + (y*y) );
-}
-
-function sortedIndex(array, value) {
-  let low = 0;
-  let high = array.length;
-
-  while (low < high) {
-      let mid = (low + high) >>> 1;
-      if (array[mid] < value) low = mid + 1;
-      else high = mid;
-  }
-  return low;
-}
-
 export function validateAddress(data) {
   return new Promise((resolve, reject) => {
     // We need to validate the address, so we need to convert the address to a query string
@@ -63,7 +18,7 @@ export function validateAddress(data) {
           let loc = json['results'][0]['geometry']['location'];
           data.lat = loc['lat'];
           data.lng = loc['lng'];
-          data.formated = json['results'][0]['formatted_address'];
+          data.formatted = json['results'][0]['formatted_address'];
           
           resolve(data);
         } else if (json.status === 'REQUEST_DENIED') {
@@ -103,6 +58,13 @@ export function dynoSani(obj) {
   return res;
 }
 
-export function getNearestStores(lat1, lng1, coords, maxDist, cap) {
-  // stub
+export function error(err, res) {
+  if (Object.prototype.toString.call(err) == '[object Error]') {
+    console.error(err);
+    res.status(500).send();
+  } else {
+    res.status(400).json({
+      error: err
+    }); 
+  }
 }

@@ -1,5 +1,5 @@
 import Accessor from '../database/Accessor';
-let OrderDB = new Accessor('orders', 'orderID', 'storeID');
+let OrderDB = new Accessor('orders', 'storeID', 'orderID');
 import moment from 'moment';
 
 import stripe from 'stripe';
@@ -15,7 +15,7 @@ export default class Order {
         this.orderID = data.orderID;
         this.storeID = data.storeID;
     
-        OrderDB.read(this.orderID, this.storeID).then(res => {
+        OrderDB.read(this.storeID, this.orderID).then(res => {
           this.data = res;
 
           resolve(this);
@@ -26,16 +26,22 @@ export default class Order {
   
         // Anything in the data object will be serialized, so we don't want to put the source token here
         // DB cannot have null values
-        data.storeID = data.storeID || reject('No Store');
-        data.src = data.src || reject('No Payment Source');
-        data.items = data.items || reject('No Items Specified');
+        let insert = {};
+        insert.storeID = data.storeID || reject('No Store');
+        insert.source = data.source || reject('No Payment Source');
+        insert.items = data.items || reject('No Items Specified');
 
         // We need to get the amount to charge, and create data like the timestamp on succesful charge
 
-        data.tstamp = moment().toISOString();
+        insert.tStamp = moment().toISOString();
+        insert.sales = 300;
+        insert.tips = 50;
+        insert.fines = 20;
+        insert.profit = 330;
+        insert.receipt = 'stripeReceipt'; // stripe transaction receipt
 
-        OrderDB.create(data).then(id => {
-          this.data = data;
+        OrderDB.create(insert).then(id => {
+          this.data = insert;
 
           resolve(id);
         }).catch(err => {
