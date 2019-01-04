@@ -28,8 +28,9 @@ export default class Order {
         // DB cannot have null values
         let insert = {};
         insert.storeID = data.storeID || reject('No Store');
-        insert.source = data.source || reject('No Payment Source');
+        let source = data.source || reject('No Payment Source');
         insert.items = data.items || reject('No Items Specified');
+        insert.status = true;
 
         // We need to get the amount to charge, and create data like the timestamp on succesful charge
 
@@ -61,7 +62,7 @@ export default class Order {
     return new Promise((resolve, reject) => {
       let changes = this.que || {};
 
-      OrderDB.update(this.orderID, this.storeID, changes).then(() => {
+      OrderDB.update(this.storeID, this.orderID, changes).then(() => {
         
         Object.keys(changes).forEach(key => {
           this.data[key] = changes[key];
@@ -110,5 +111,13 @@ export default class Order {
 
   get mods() {
     return this.data.mods;
+  }
+
+  set status(status) {
+    this.que['status'] = status;
+  }
+
+  get status() {
+    return this.data.status;
   }
 }

@@ -61,7 +61,7 @@ export default class Item {
     return new Promise((resolve, reject) => {
       let changes = this.que || {};
 
-      ItemDB.update(this.itemID, this.storeID, changes).then(() => {
+      ItemDB.update(this.storeID, thise.itemID, changes).then(() => {
         
         Object.keys(changes).forEach(key => {
           this.data[key] = changes[key];
@@ -79,7 +79,7 @@ export default class Item {
     state = state || !this.data.marked;
     return new Promise((resolve, reject) => {
 
-      ItemDB.update({
+      ItemDB.update(this.storeID, this.itemID, {
         marked: state
       }).then(() => {
         resolve(state);
@@ -125,5 +125,9 @@ export default class Item {
 
   get mods() {
     return this.data.mods;
+  }
+
+  get marked() {
+    return this.data.marked;
   }
 }

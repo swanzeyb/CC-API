@@ -1,6 +1,7 @@
 import express from 'express';
 import Store from '../classes/Store';
 import getNearest from '../utils/Finder';
+import { error } from '../utils/Utils';
 
 /*
   NO INPUT SANITATION HAS BEEN IMPLEMENTED YET!
@@ -17,15 +18,7 @@ export default class Stores {
 
       }).catch(err => {
 
-        if (Object.prototype.toString.call(err) == '[object Error]') {
-          console.error(err);
-          res.status(500).send();
-        } else {
-          res.status(400).json({
-            error: err
-          }); 
-        }
-
+        error(err, res);
       });
     });
 
@@ -38,15 +31,7 @@ export default class Stores {
 
       }).catch(err => {
 
-        if (Object.prototype.toString.call(err) == '[object Error]') {
-          console.error(err);
-          res.status(500).send();
-        } else {
-          res.status(400).json({
-            error: err
-          }); 
-        }
-
+        error(err, res);
       });
     });
 
@@ -61,15 +46,7 @@ export default class Stores {
 
       }).catch(err => {
 
-        if (Object.prototype.toString.call(err) == '[object Error]') {
-          console.error(err);
-          res.status(500).send();
-        } else {
-          res.status(400).json({
-            error: err
-          }); 
-        }
-
+        error(err, res);
       });
 
     });
@@ -102,15 +79,7 @@ export default class Stores {
               res.status(200).send();
             }).catch(err => {
 
-              if (Object.prototype.toString.call(err) == '[object Error]') {
-                console.error(err);
-                res.status(500).send();
-              } else {
-                res.status(400).json({
-                  error: err
-                }); 
-              }
-      
+              error(err, res);
             });
             
           }
@@ -118,15 +87,7 @@ export default class Stores {
         
       }).catch(err => {
 
-        if (Object.prototype.toString.call(err) == '[object Error]') {
-          console.error(err);
-          res.status(500).send();
-        } else {
-          res.status(400).json({
-            error: err
-          }); 
-        }
-
+        error(err, res);
       });
     });
 
@@ -141,22 +102,12 @@ export default class Stores {
 
         }).catch(err => {
 
-          console.error(err);
-          res.status(500).send();
-          
+          error(err, res);
         });
 
       }).catch(err => {
 
-        if (Object.prototype.toString.call(err) == '[object Error]') {
-          console.error(err);
-          res.status(500).send();
-        } else {
-          res.status(400).json({
-            error: err
-          }); 
-        }
-
+        error(err, res);
       });
     });
 

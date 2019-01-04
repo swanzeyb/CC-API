@@ -1,0 +1,37 @@
+aws dynamodb update-table \
+    --table-name stores \
+    --attribute-definitions '[
+      {
+          "AttributeName": "lat",
+          "AttributeType": "N"
+      },
+	  {
+          "AttributeName": "lng",
+          "AttributeType": "N"
+	  }
+    ]' \
+    --global-secondary-index-updates '[
+        {
+            "Create": {
+                "IndexName": "LatLng",
+                "KeySchema": [
+                    {
+                        "AttributeName": "lat",
+                        "KeyType": "HASH"
+                    },
+                    {
+                        "AttributeName": "lng",
+                        "KeyType": "RANGE"
+                    }
+                ],
+                "Projection": {
+                    "ProjectionType": "KEYS_ONLY"
+                },
+                "ProvisionedThroughput": {
+                    "ReadCapacityUnits": 1,
+                    "WriteCapacityUnits": 1
+                }
+            }
+        }
+    ]' \
+	--endpoint-url http://192.168.29.131:8000

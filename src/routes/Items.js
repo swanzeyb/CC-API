@@ -72,6 +72,8 @@ export default class Items {
         let ops = {}; // no sneaky db insertion
         ops[true] = true;
         ops[false] = false;
+        ops['true'] = true;
+        ops['false'] = true;
 
         item.mark(ops[req.body.state]).then(newState => {
           res.status(200).json({

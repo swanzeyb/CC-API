@@ -3,6 +3,7 @@ import { validateAddress } from '../utils/Utils';
 import moment from 'moment';
 
 let StoreDB = new Accessor('stores', 'storeID');
+let OrderDB = new Accessor('orders', 'storeID', 'orderID');
 
 export default class Store {
   constructor(data) {
@@ -72,7 +73,6 @@ export default class Store {
 
   sales(start, end) {
     return new Promise((resolve, reject) => {
-      let OrderDB = new Accessor('orders', 'storeID', 'orderID');
       start = start || moment.utc().startOf('day');
       end = end || moment.utc().endOf('day');
       start = moment(start).toISOString();
@@ -103,6 +103,34 @@ export default class Store {
         });
   
         resolve(figures);
+      }).catch(err => {
+        reject(err);
+      });
+    });
+  }
+
+  orders(start, end) {
+    return new Promise((resolve, reject) => {
+      start = start || moment.utc().startOf('day');
+      end = end || moment.utc().endOf('day');
+      start = moment(start).toISOString();
+      end = moment(end).toISOString();
+
+      OrderDB.query({
+        IndexName: "TimeStampIndex",
+        ProjectionExpression: "sales, tips, #itm, receipt",
+        ExpressionAttributeNames: {
+          "#itm": "items"
+        },
+        KeyConditionExpression: "storeID = :storeid AND tStamp BETWEEN :frt AND :lst",
+        ExpressionAttributeValues: {
+          ":storeid": this.storeID,
+          ":frt": start,
+          ":lst": end
+        }
+      }).then(items => {
+  
+        resolve(items);
       }).catch(err => {
         reject(err);
       });
