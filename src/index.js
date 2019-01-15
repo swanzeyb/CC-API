@@ -4,6 +4,36 @@ import jwt from 'express-jwt';
 import jwks from 'jwks-rsa';
 require('dotenv').config(); // doesn't work with babel-watch, maybe works on dist builds?
 
+let app = express();
+app.use(bodyParser.json()); // for parsing application/json
+app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
+app.use(express.json()); // read json post data
+
+/* a method of error handling
+app.use((req, res, next) => {
+  const err = new Error('Not Found');
+  err.status = 404;
+  next(err);
+});
+
+// If our application encounters an error, we'll display the error and stack trace accordingly.
+app.use((err, req, res, next) => {
+  res.status(err.status || 500);
+  res.render('error', {
+    message: err.message,
+    error: err
+  });
+});
+*/
+
+import moment from 'moment';
+app.use((req, res, next) => {
+  let time = moment().toISOString();
+  console.log(req.method+' '+req.path);
+  next();
+});
+
+// Authentication Middleware https://auth0.com/docs/quickstart/backend/nodejs?framed=1
 let jwtCheck = jwt({ // Our authentication middleware, only users who have passed a valid bearer token will pass this middleware
   secret: jwks.expressJwtSecret({
       cache: true,
@@ -14,18 +44,6 @@ let jwtCheck = jwt({ // Our authentication middleware, only users who have passe
   audience: 'https://coffeeconnect/',
   issuer: "https://corefinder.auth0.com/",
   algorithms: ['RS256']
-});
-
-let app = express();
-app.use(bodyParser.json()); // for parsing application/json
-app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
-app.use(express.json()); // read json post data
-
-import moment from 'moment';
-app.use((req, res, next) => {
-  let time = moment().toISOString();
-  console.log(req.method+' '+req.path);
-  next();
 });
 
 // Now we import our routes
