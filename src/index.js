@@ -57,12 +57,14 @@ let jwtCheck = jwt({ // Our authentication middleware, only users who have passe
 // Now we import our routes
 import Stores from './routes/Stores';
 import Items from './routes/Items';
+import Models from './routes/Models';
 import Orders from './routes/Orders';
 import Users from './routes/Users';
 
 // Begin assigning the routes
 app.use('/stores', new Stores(jwtCheck));
 app.use('/items', new Items(jwtCheck));
+app.use('/models', new Models(jwtCheck));
 app.use('/orders', new Orders(jwtCheck));
 app.use('/users', new Users(jwtCheck));
 

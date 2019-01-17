@@ -44,6 +44,7 @@ export default class Store {
         insert.hours.saturday = data.hours.saturday || reject('No Hours saturday');
         insert.hours.sunday = data.hours.sunday || reject('No Hours sunday');
         insert.items = data.items || [];
+        insert.models = data.models || [];
 
         validateAddress(data.address).then(res => { // fix me
           insert.lat = res.lat;
@@ -199,6 +200,68 @@ export default class Store {
     });
   }
 
+  addModel(id) { // pushed bad values?
+    this.data.models.push(id)
+    this.models = this.data.models;
+    console.log('addModel', id, this.data.models);
+    return this.commitQue();
+  };
+
+  removeModel(id) {
+    let anew = []; // delete operator leaves holes in objects / arrays
+    this.data.models.forEach(itemID => {
+      if (itemID !== id) {
+        anew.push(itemID);
+      }
+    });
+    this.models = anew;
+    return this.commitQue();
+  }
+
+  getModels() {
+    return new Promise((resolve, reject) => {
+      let getit = [];
+
+      this.data.models.forEach(id => {
+        getit.push({
+          "storeID": this.storeID,
+          "itemID": id
+        });
+      });
+      
+      if (getit.length > 0) {
+        let params = {
+          RequestItems: {
+            "items": {
+              Keys: getit,
+              ProjectionExpression: "storeID, itemID, #nam, parent, #col, #roo, toggle, enum, #tab",
+              ExpressionAttributeNames: {
+                "#nam": "name",
+                "#col": "column",
+                "#roo": "row",
+                "#tab": "table"
+              }
+            }
+          }
+        }
+        
+        StoreDB.batchGet(params).then(items => {
+          let final = [];
+          items['Responses']['items'].forEach(item => {
+            final.push(item);
+          });
+
+          resolve(final);
+        }).catch(err => {
+          reject(err);
+        });
+      } else {
+        resolve({});
+      }
+
+    });
+  }
+
   commitQue() {
     return new Promise((resolve, reject) => {
       let changes = this.que || {};
@@ -267,5 +330,13 @@ export default class Store {
 
   get items() {
     return this.data.items;
+  }
+
+  set models(models) {
+    this.que['models'] = models;
+  }
+
+  get models() {
+    return this.data.models;
   }
 }

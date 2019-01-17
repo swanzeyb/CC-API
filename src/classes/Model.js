@@ -2,13 +2,23 @@ import Store from './Store';
 import Accessor from '../database/Accessor';
 let ItemDB = new Accessor('items', 'storeID', 'itemID');
 
-export default class Item {
-  constructor(data) {
+/*
+  5 input types;
+
+  Row: One for modifications with 1 option, but can vary in quantity (Espresso Shots)
+  Column: One for modifications with more than 1 option, but can only be one quantity (Size)
+  Table: One for modifications than can support more than one option, and each option can have an indenpendent quantity (Syrups)
+  Enum: One for modifications that specify indirect quantities of an inclusion (Extra Onions, No Nutmeg); [No, Light, Regular, Extra]
+  Toggle: Can toggle the option (long shot)
+*/
+
+export default class Model {
+  constructor(data, read) {
     this.que = {};
 
     return new Promise((resolve, reject) => {
 
-      if (data.itemID && data.storeID) {
+      if (read) {
         this.itemID = data.itemID;
         this.storeID = data.storeID;
     
@@ -24,25 +34,24 @@ export default class Item {
         // DB cannot have null values
         let insert = {};
         insert.storeID = data.storeID || reject('No Store');
-        insert.modelID = data.modelID || reject('No Model ID');
-        insert.name = data.name || reject('No Item Name');
-        insert.desc = data.desc || reject('No Desc');
-        insert.context = data.context || reject('No Context');
-        insert.parent = data.parent || reject('No Parent');
-        insert.child = data.child || reject('No Child');
-        insert.marked = (data.marked !== null) ? data.marked : true;
-        insert.base = data.base || reject('No Base');
-        insert.options = data.options || reject('No Options');
+        insert.itemID = data.itemID || reject('No Model ID');
+        insert.name = data.name || reject('No Model Display Name');
+        insert.parent = data.parent || reject('No Parent'); // EX: Size
+        insert.row = data.row || {};
+        insert.column = data.column || {};
+        insert.table = data.table || {};
+        insert.enum = data.enum || {};
+        insert.toggle = data.toggle || {};
         
         ItemDB.create(insert).then(res => {
           this.data = insert;
-          
+          console.log('made', res);
           new Store({
             storeID: res.storeID
           }).then(store => {
 
-            store.addItem(res.itemID).then(() => {
-              resolve(res.itemID);
+            store.addModel(res.itemID).then(() => {
+              resolve();
             }).catch(err => {
               reject(err);
             });
@@ -78,59 +87,16 @@ export default class Item {
     });
   }
 
-  mark(state) {
-    state = state || !this.data.marked;
-    return new Promise((resolve, reject) => {
-
-      ItemDB.update(this.storeID, this.itemID, {
-        marked: state
-      }).then(() => {
-        resolve(state);
-      }).catch(err => {
-        reject(err);
-      });
-
-    });
-  }
-
   flushQue() {
     this.que = {};
   };
 
   // Setters so we can perform data validation
-  set name(name) {
-    this.que['name'] = name;
+  set row(row) {
+    this.que['row'] = row;
   }
 
   get name() {
-    return this.data.iname;
-  }
-
-  set desc(desc) {
-    this.que['desc'] = desc;
-  }
-
-  get desc() {
-    return this.data.desc;
-  }
-
-  set price(price) {
-    this.que['price'] = price;
-  }
-
-  get price() {
-    return this.data.price;
-  }
-
-  set mods(mods) {
-    this.que['mods'] = mods;
-  }
-
-  get mods() {
-    return this.data.mods;
-  }
-
-  get marked() {
-    return this.data.marked;
+    return this.data.row;
   }
 }

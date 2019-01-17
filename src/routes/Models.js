@@ -1,5 +1,5 @@
 import express from 'express';
-import Item from '../classes/Item';
+import Model from '../classes/Model';
 import Store from '../classes/Store';
 import Accessor from '../database/Accessor';
 import { error } from '../utils/Utils';
@@ -9,7 +9,7 @@ let ItemDB = new Accessor('items', 'storeID', 'itemID');
   NO INPUT SANITATION HAS BEEN IMPLEMENTED YET!
 */
 
-export default class Items {
+export default class Models {
   constructor(auth) {
     let router = express.Router();
 
@@ -18,7 +18,7 @@ export default class Items {
         storeID: req.params.storeID
       }).then(store => {
         
-        store.getItems().then(items => {
+        store.getModels().then(items => {
           
           res.status(200).json(items);
 
@@ -33,11 +33,11 @@ export default class Items {
       });
     });
 
-    router.get('/:storeID/:itemID', (req, res) => {
-      new Item({
-        itemID: req.params.itemID,
+    router.get('/:storeID/:modelID', (req, res) => {
+      new Model({
+        itemID: req.params.modelID,
         storeID: req.params.storeID
-      }).then(item => {
+      }, true).then(item => {
 
         res.status(200).json(item.data);
 
@@ -47,13 +47,12 @@ export default class Items {
       });
     });
 
-    router.post('/:storeID', auth, (req, res) => {
+    router.post('/:storeID/:modelID', auth, (req, res) => {
       req.body.storeID = req.params.storeID;
-      new Item(req.body).then(id => {
+      req.body.itemID = req.params.modelID;
+      new Model(req.body, false).then(() => {
 
-        res.status(201).json({
-          itemID: id
-        });
+        res.status(201).json();
 
       }).catch(err => {
 
@@ -64,37 +63,11 @@ export default class Items {
       });
     });
 
-    router.patch('/:storeID/:itemID/mark', auth, (req, res) => {
-      new Item({
-        storeID: req.params.storeID,
-        itemID: req.params.itemID
-      }).then(item => {
-        let ops = {}; // no sneaky db insertion
-        ops[true] = true;
-        ops[false] = false;
-        ops['true'] = true;
-        ops['false'] = true;
-
-        item.mark(ops[req.body.state]).then(newState => {
-          res.status(200).json({
-            state: newState
-          });
-        }).catch(err => {
-
-          error(err, res);
-        });
-
-      }).catch(err => {
-
-        error(err, res);
-      });
-    });
-
-    router.put('/:storeID/:itemID', auth, (req, res) => {
-      new Item({
-        itemID: req.params.itemID,
+    router.put('/:storeID/:modelID', auth, (req, res) => {
+      new Model({
+        itemID: req.params.modelID,
         storeID: req.params.storeID
-      }).then(item => {
+      }, true).then(item => {
 
         let keys = Object.keys(req.body);
         for (let i = 0; i < keys.length; i++) {
@@ -135,14 +108,14 @@ export default class Items {
       });
     });
 
-    router.delete('/:storeID/:itemID', auth, (req, res) => {
+    router.delete('/:storeID/:modelID', auth, (req, res) => {
       new Store({
         storeID: req.params.storeID
       }).then(store => {
         
-        store.removeItem(req.params.itemID).then(() => {
+        store.removeItem(req.params.modelID).then(() => {
           
-          ItemDB.delete(req.params.storeID, req.params.itemID).then(() => {
+          ItemDB.delete(req.params.storeID, req.params.modelID).then(() => {
 
             res.status(200).send();
     

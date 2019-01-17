@@ -31,33 +31,45 @@ export default class Accessor {
         input[this.id] = id;
       }
       if (this.key) {
-        input[this.key] = key;
+        if (data[this.key]) {
+          input[this.key] = data[this.key];
+        } else {
+          input[this.key] = key;
+        }
       }
       
       Object.keys(data).forEach(key => {
+
         input[key] = data[key];
       });
-      
+
       return input;
     }
   }
 
-  create(data, key) {
+  create(data) {
     return new Promise((resolve, reject) => {
       let id = ids.generate();
-      let key = key || ids.generate();
+      let key = ids.generate();
       
+      console.log({
+        TableName: this.table,
+        Item: this.item(id, key, data)
+      });
+
       client.put({
         TableName: this.table,
         Item: this.item(id, key, data)
       }, err => {
         if (err) {
+          console.error('i errored out', err);
           reject(err);
         } else {
+          console.log('worked');
           let res = {};
           res[this.id] = data[this.id] || id;
           if (this.key) {
-            res[this.key] = key
+            res[this.key] = data[this.key] || key
           }
           resolve(res);
         }

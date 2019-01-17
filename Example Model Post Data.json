@@ -1,0 +1,156 @@
+{
+  "name": "Hot Drinks",
+  "parent": {
+    "name": "Size",
+    "options": {
+      "8oz": 160,
+      "12oz": 200,
+      "16oz": 240,
+      "20oz": 260
+    },
+    "standard": "16oz"
+  },
+  "row": {
+    "Espresso": [
+      {
+        "name": "Shots",
+        "limit": 10,
+        "charge": 80,
+        "multiplier": true,
+        "parent": true,
+        "standard": {
+          "depdendent": true,
+          "8oz": 1,
+          "12oz": 2,
+          "16oz": 2,
+          "20oz": 3 
+        }
+      }
+    ],
+    "Add-ins": [
+      {
+        "name": "Vanilla Bean Powder",
+        "limit": 10,
+        "charge": 0,
+        "multiplier": false,
+        "parent": true
+      }
+    ]
+  },
+  "column": {
+    "Espresso": {
+      "name": "Blonde or Decaf Espresso",
+      "options": [
+        "1/2 Decaf",
+        "1/3 Decaf",
+        "2/3 Decaf",
+        "Decaf",
+        "Blonde Espresso"
+      ],
+      "charge": 0,
+      "multiplier": false,
+      "parent": false
+    },
+    "Milk": {
+      "name": "Milk Choices",
+      "options": [
+        "2% Milk",
+        "Almond",
+        "Breve",
+        "Coconut",
+        "Eggnog",
+        "Heavy Cream",
+        "Nonfat Milk",
+        "Soy",
+        "Whole Milk"
+      ],
+      "charge": 60,
+      "multiplier": false,
+      "parent": true,
+      "standard": {
+        "depdendent": false,
+        "*": "2% Milk"
+      }
+    }
+  },
+  "table": {
+    "Syrups": {
+      "name": "Syrup",
+      "limit": 20,
+      "charge": 60,
+      "multiplier": false,
+      "parent": false,
+      "options": [
+        "Caramel",
+        "Chesnut Praline",
+        "Cinnamon Dolce",
+        "Classic",
+        "Gingerbread",
+        "Hazelnut",
+        "Raspberry",
+        "SF Cinnamon Dolce",
+        "SF Vanilla",
+        "Toffee Nut",
+        "Vanilla"
+      ]
+    },
+    "Add-ins": {
+      "name": "Sweetener",
+      "charge": 0,
+      "multiplier": false,
+      "parent": false,
+      "options": [
+        "Equal",
+        "Honey",
+        "Splenda",
+        "Stevia",
+        "Sugar"
+      ]
+    }
+  },
+  "enum": {
+    "Milk": [
+      {
+        "name": "Foam",
+        "none": "No"
+      },
+      {
+        "name": "Temp",
+        "none": false,
+        "light": "Warm",
+        "regular": "Steamed",
+        "extra": "Extra Hot"
+      }
+    ],
+    "Toppings": [
+      {
+        "name": "Whipped Cream",
+        "parent": true
+      },
+      {
+        "name": "Cold Foam",
+        "light": false,
+        "extra": false
+      },
+      {
+        "name": "Caramel Drizzle"
+      }
+    ]
+  },
+  "toggle": {
+    "Espresso": [
+      {
+        "name": "Long Shot",
+        "charge": 0,
+        "multiplier": false,
+        "parent": false
+      },
+      {
+        "name": "Ristretto",
+        "charge": 0,
+        "multiplier": false,
+        "parent": false
+      }
+    ]
+  }
+}
