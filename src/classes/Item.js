@@ -26,24 +26,26 @@ export default class Item {
         insert.storeID = data.storeID || reject('No Store');
         insert.name = data.name || reject('No Item Name');
         insert.desc = data.desc || reject('No Desc');
-        insert.price = data.price || reject('No Price');
-        insert.marked = true;
-        insert.mods = data.mods || {};
+        insert.context = data.context || reject('No Context');
+        insert.parent = data.parent || reject('No Parent');
+        insert.child = data.child || reject('No Child');
+        insert.marked = (data.marked !== null) || true;
+        insert.base = data.base || reject('No Base');
+        insert.options = data.options || reject('No Options');
         
-        ItemDB.create(insert).then(id => {
+        ItemDB.create(insert).then(res => {
           this.data = insert;
-
+          
           new Store({
-            storeID: insert.storeID
+            storeID: res.storeID
           }).then(store => {
 
-            store.addItem(id).then(() => {
-              resolve(id);
+            store.addItem(res.itemID).then(() => {
+              resolve(res.itemID);
             }).catch(err => {
               reject(err);
             });
 
-            resolve(id);
           }).catch(err => {
             reject(err);
           });

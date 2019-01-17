@@ -26,39 +26,40 @@ export default class Store {
         
         // DB cannot have null values
         let insert = {};
-        insert.name = insert.name || reject('No Store Name');
-        insert.desc = insert.desc || reject('No Desc');
-        insert.owner = insert.owner || reject('No Owner');
-        insert.address = insert.address || reject('No Address');
-        insert.address.address1 = insert.address.address1 || reject('No Address Field 1');
-        insert.address.address2 = insert.address.address2 || '';
-        insert.address.city = insert.address.city || reject('No City');
-        insert.address.state = insert.address.state || reject('No State');
-        insert.address.zip = insert.address.zip || reject('No ZIP');
-        insert.hours = insert.hours || reject('No Hours');
-        insert.hours.monday = insert.hours.monday || reject('No Hours monday');
-        insert.hours.tuesday = insert.hours.tuesday || reject('No Hours tuesday');
-        insert.hours.wednesday = insert.hours.wednesday || reject('No Hours wednesday');
-        insert.hours.thursday = insert.hours.thursday || reject('No Hours thursday');
-        insert.hours.friday = insert.hours.friday || reject('No Hours friday');
-        insert.hours.saturday = insert.hours.saturday || reject('No Hours saturday');
-        insert.hours.sunday = insert.hours.sunday || reject('No Hours sunday');
-        insert.items = insert.items || [];
+        insert.name = data.name || reject('No Store Name');
+        insert.desc = data.desc || reject('No Desc');
+        insert.owner = data.owner || reject('No Owner');
+        insert.address = data.address || reject('No Address');
+        insert.address.address1 = data.address.address1 || reject('No Address Field 1');
+        insert.address.address2 = data.address.address2 || '';
+        insert.address.city = data.address.city || reject('No City');
+        insert.address.state = data.address.state || reject('No State');
+        insert.address.zip = data.address.zip || reject('No ZIP');
+        insert.hours = data.hours || reject('No Hours');
+        insert.hours.monday = data.hours.monday || reject('No Hours monday');
+        insert.hours.tuesday = data.hours.tuesday || reject('No Hours tuesday');
+        insert.hours.wednesday = data.hours.wednesday || reject('No Hours wednesday');
+        insert.hours.thursday = data.hours.thursday || reject('No Hours thursday');
+        insert.hours.friday = data.hours.friday || reject('No Hours friday');
+        insert.hours.saturday = data.hours.saturday || reject('No Hours saturday');
+        insert.hours.sunday = data.hours.sunday || reject('No Hours sunday');
+        insert.items = data.items || [];
 
         validateAddress(data.address).then(res => { // fix me
           insert.lat = res.lat;
           insert.lng = res.lng;
+          insert.address.formatted = res.formatted;
 
-          delete res.lat; // fix me, shouldn't need to delete keys..
-          delete res.lng;
-          insert.address = res;
+          if (insert.address.address2 === '') {
+            insert.address.address2 = 'false';
+          }
 
           // Add the store to the database
-          StoreDB.create(insert).then(id => {
-            this.storeID = id;
+          StoreDB.create(insert).then(store => {
+            this.storeID = store.storeID;
             this.data = insert;
           
-            resolve(id);
+            resolve(store.storeID);
           }).catch(err => {
             reject(err);
           });
@@ -164,13 +165,13 @@ export default class Store {
           "itemID": id
         });
       });
-
+      
       if (getit.length > 0) {
         let params = {
           RequestItems: {
             "items": {
               Keys: getit,
-              ProjectionExpression: "storeID, itemID, #nam, #des, mods, price",
+              ProjectionExpression: "storeID, itemID, #nam, #des, context, parent, child, marked",
               ExpressionAttributeNames: {
                 "#nam": "name",
                 "#des": "desc",
@@ -180,7 +181,14 @@ export default class Store {
         }
         
         StoreDB.batchGet(params).then(items => {
-          resolve(items['Responses']['items']);
+          let final = [];
+          items['Responses']['items'].forEach(item => {
+            if (!item.marked) {
+              final.push(item);
+            }
+          });
+
+          resolve(final);
         }).catch(err => {
           reject(err);
         });

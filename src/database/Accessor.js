@@ -23,9 +23,16 @@ export default class Accessor {
       return Key;
     }
 
-    this.item = (id, data) => {
+    this.item = (id, key, data) => {
       let input = {};
-      input[this.key] = id;
+      if (data[this.id]) {
+        input[this.id] = data[this.id];
+      } else {
+        input[this.id] = id;
+      }
+      if (this.key) {
+        input[this.key] = key;
+      }
       
       Object.keys(data).forEach(key => {
         input[key] = data[key];
@@ -35,18 +42,24 @@ export default class Accessor {
     }
   }
 
-  create(data) {
+  create(data, key) {
     return new Promise((resolve, reject) => {
       let id = ids.generate();
+      let key = key || ids.generate();
       
       client.put({
         TableName: this.table,
-        Item: this.item(id, data)
-      }, function(err) {
+        Item: this.item(id, key, data)
+      }, err => {
         if (err) {
           reject(err);
         } else {
-          resolve(id);
+          let res = {};
+          res[this.id] = data[this.id] || id;
+          if (this.key) {
+            res[this.key] = key
+          }
+          resolve(res);
         }
       });
 

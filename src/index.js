@@ -4,6 +4,14 @@ import jwt from 'express-jwt';
 import jwks from 'jwks-rsa';
 require('dotenv').config(); // doesn't work with babel-watch, maybe works on dist builds?
 
+// dev https shit
+import fs from 'fs';
+import https from 'https';
+const creds = {
+  key: fs.readFileSync('C:/cert/private.pem', 'utf8'),
+  cert: fs.readFileSync('C:/cert/certificate.pem', 'utf8')
+}
+
 let app = express();
 app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
@@ -63,3 +71,9 @@ let port = process.env.PORT || 8080;
 app.listen(port, () => {
   console.log('Server Started');
 });
+
+/*
+https.createServer(creds, app).listen(port, () => {
+  console.log('Server Started');
+});
+*/

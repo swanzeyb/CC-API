@@ -1,13 +1,77 @@
 {
   "name": "Latte",
   "desc": "foamy desire.",
-  "price": 300,
-  "mods": {
-    "req": {
-      "size": ["8oz", "12oz", "16oz", "20oz"]
+  "marked": false,
+  "context": "Drinks",
+  "parent": "Hot Coffee",
+  "child": "Lattes",
+  "base": {
+    "Size": "16oz"
+  },
+  "options": {
+    "Column": {
+      "Size": [
+        {
+          "part": "8oz",
+          "price": 200,
+          "limit": 1,
+          "qident": "false"
+        },
+        {
+          "part": "12oz",
+          "price": 220,
+          "limit": 1,
+          "qident": "false"
+        },
+        {
+          "part": "16oz",
+          "price": 240,
+          "limit": 1,
+          "qident": "false"
+        },
+        {
+          "part": "meta",
+          "selected": "12oz",
+          "amount": 1
+        }
+      ]
     },
-    "opt": {
-      "milk": ["2%", "Skim"]
+    "Table": {
+      "Syrup": [
+        {
+          "part": "Vanilla",
+          "price": 60,
+          "limit": 10,
+          "qident": "Pumps"
+        },
+        {
+          "part": "Cinnamon",
+          "price": 60,
+          "limit": 10,
+          "qident": "Pumps"
+        },
+        {
+          "part": "Peppermint",
+          "price": 60,
+          "limit": 10,
+          "qident": "Pumps"
+        },
+        {
+          "part": "meta",
+          "selected": ["Vanilla"],
+          "amount": [1]
+        }
+      ]
+    },
+    "Row": {
+      "Espresso Shots": [
+        {
+          "part": "Espresso",
+          "mult": 80,
+          "limit": 1,
+          "qident": "Shots"
+        }
+      ]
     }
   }
 }

@@ -1,12 +1,12 @@
 {
-	"name": "mom n pop shop",
-	"desc": "we sell things",
+	"name": "Starbucks",
+	"desc": "Cofee and Sammies",
 	"address": {
-    "address1": "7709 fairway ave se",
-    "address2": "202",
-    "city": "snoqualmie",
-    "state": "wa",
-    "zip": "98065"
+    "address1": "5312 Little Rock Road SW",
+    "address2": "",
+    "city": "Tumwater",
+    "state": "WA",
+    "zip": "98512"
   },
   "hours": {
     "monday": ["05:00", "17:00"],

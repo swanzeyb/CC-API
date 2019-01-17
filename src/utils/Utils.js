@@ -13,14 +13,15 @@ export function validateAddress(data) {
     fetch(query).then(res => {
       res.json().then(json => {
         if (json.status === 'OK') { // The address is valid
+          let obj = {};
               
           // Add the formatted address to the object along with lat / lng
           let loc = json['results'][0]['geometry']['location'];
-          data.lat = loc['lat'];
-          data.lng = loc['lng'];
-          data.formatted = json['results'][0]['formatted_address'];
+          obj.lat = loc['lat'];
+          obj.lng = loc['lng'];
+          obj.formatted = json['results'][0]['formatted_address'];
           
-          resolve(data);
+          resolve(obj);
         } else if (json.status === 'REQUEST_DENIED') {
           reject('Server Error: Bad Maps Key');
         } else {

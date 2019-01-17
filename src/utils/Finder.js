@@ -51,11 +51,11 @@ export default function getNearest(lat1, lng1, maxDist, cap) {
     let bounds = pointBounds(lat1, lng1, maxDist/2);
     
     StoreDB.scan({
-      ProjectionExpression: "lat, lng, storeID, #nam, #des, hours",
+      ProjectionExpression: "lat, lng, storeID, #nam, #des, hours, address",
       FilterExpression: "lat BETWEEN :latMin AND :latMax AND lng BETWEEN :lngMin AND :lngMax",
       ExpressionAttributeNames: {
         "#nam": "name",
-        "#des": "desc",
+        "#des": "desc"
       },
       ExpressionAttributeValues: {
         ":latMax": bounds.latMax,
@@ -72,7 +72,8 @@ export default function getNearest(lat1, lng1, maxDist, cap) {
           storeID: store.storeID,
           name: store.name,
           desc: store.desc,
-          hours: store.hours
+          hours: store.hours,
+          address: store.address
         });
       });
       res = res.slice(0, cap);
