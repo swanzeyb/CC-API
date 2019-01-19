@@ -23,16 +23,21 @@ export default class Item {
         
         // DB cannot have null values
         let insert = {};
-        insert.storeID = data.storeID || reject('No Store');
-        insert.modelID = data.modelID || reject('No Model ID');
+        insert.storeID = data.storeID || reject('No Store'); // does the store exist?
+        insert.modelID = data.modelID || reject('No Model ID'); // does the model exist?
         insert.name = data.name || reject('No Item Name');
         insert.desc = data.desc || reject('No Desc');
         insert.context = data.context || reject('No Context');
         insert.parent = data.parent || reject('No Parent');
         insert.child = data.child || reject('No Child');
         insert.marked = (data.marked !== null) ? data.marked : true;
-        insert.base = data.base || reject('No Base');
-        insert.options = data.options || reject('No Options');
+
+        // The following need to be checked against the model for sanity
+        insert.row = data.row || {};
+        insert.column = data.column || {};
+        insert.table = data.table || {};
+        insert.enums = data.enums || {};
+        insert.toggle = data.toggle || {};
         
         ItemDB.create(insert).then(res => {
           this.data = insert;

@@ -108,7 +108,7 @@
       ]
     }
   },
-  "enum": {
+  "enums": {
     "Milk": [
       {
         "name": "Foam",

@@ -2,15 +2,6 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import jwt from 'express-jwt';
 import jwks from 'jwks-rsa';
-require('dotenv').config(); // doesn't work with babel-watch, maybe works on dist builds?
-
-// dev https shit
-import fs from 'fs';
-import https from 'https';
-const creds = {
-  key: fs.readFileSync('C:/cert/private.pem', 'utf8'),
-  cert: fs.readFileSync('C:/cert/certificate.pem', 'utf8')
-}
 
 let app = express();
 app.use(bodyParser.json()); // for parsing application/json
@@ -68,14 +59,12 @@ app.use('/models', new Models(jwtCheck));
 app.use('/orders', new Orders(jwtCheck));
 app.use('/users', new Users(jwtCheck));
 
-// Start
-let port = process.env.PORT || 8080;
-app.listen(port, () => {
-  console.log('Server Started');
+app.get('/test', (req, res) => {
+  res.json({
+    "body": "Hello World"
+  });
 });
 
-/*
-https.createServer(creds, app).listen(port, () => {
-  console.log('Server Started');
-});
-*/
+// Start   "DEV_AWS_ENDPOINT": "http://localhost:8000",
+//export default app;
+module.exports = app;

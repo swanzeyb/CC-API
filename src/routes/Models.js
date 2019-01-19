@@ -3,7 +3,7 @@ import Model from '../classes/Model';
 import Store from '../classes/Store';
 import Accessor from '../database/Accessor';
 import { error } from '../utils/Utils';
-let ItemDB = new Accessor('items', 'storeID', 'itemID');
+let ModelDB = new Accessor('models', 'storeID', 'modelID');
 
 /*
   NO INPUT SANITATION HAS BEEN IMPLEMENTED YET!
@@ -35,9 +35,9 @@ export default class Models {
 
     router.get('/:storeID/:modelID', (req, res) => {
       new Model({
-        itemID: req.params.modelID,
+        modelID: req.params.modelID,
         storeID: req.params.storeID
-      }, true).then(item => {
+      }).then(item => {
 
         res.status(200).json(item.data);
 
@@ -47,12 +47,13 @@ export default class Models {
       });
     });
 
-    router.post('/:storeID/:modelID', auth, (req, res) => {
+    router.post('/:storeID', auth, (req, res) => {
       req.body.storeID = req.params.storeID;
-      req.body.itemID = req.params.modelID;
-      new Model(req.body, false).then(() => {
+      new Model(req.body).then(modelID => {
 
-        res.status(201).json();
+        res.status(201).json({
+          modelID: modelID
+        });
 
       }).catch(err => {
 
@@ -65,9 +66,9 @@ export default class Models {
 
     router.put('/:storeID/:modelID', auth, (req, res) => {
       new Model({
-        itemID: req.params.modelID,
+        modelID: req.params.modelID,
         storeID: req.params.storeID
-      }, true).then(item => {
+      }).then(item => {
 
         let keys = Object.keys(req.body);
         for (let i = 0; i < keys.length; i++) {
@@ -115,7 +116,7 @@ export default class Models {
         
         store.removeItem(req.params.modelID).then(() => {
           
-          ItemDB.delete(req.params.storeID, req.params.modelID).then(() => {
+          ModelDB.delete(req.params.storeID, req.params.modelID).then(() => {
 
             res.status(200).send();
     

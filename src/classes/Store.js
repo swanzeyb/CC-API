@@ -172,10 +172,11 @@ export default class Store {
           RequestItems: {
             "items": {
               Keys: getit,
-              ProjectionExpression: "storeID, itemID, #nam, #des, context, parent, child, marked",
+              ProjectionExpression: "storeID, itemID, #nam, #des, context, parent, child, marked, #itm",
               ExpressionAttributeNames: {
                 "#nam": "name",
                 "#des": "desc",
+                "#itm": "item"
               }
             }
           }
@@ -225,16 +226,16 @@ export default class Store {
       this.data.models.forEach(id => {
         getit.push({
           "storeID": this.storeID,
-          "itemID": id
+          "modelID": id
         });
       });
       
       if (getit.length > 0) {
         let params = {
           RequestItems: {
-            "items": {
+            "models": {
               Keys: getit,
-              ProjectionExpression: "storeID, itemID, #nam, parent, #col, #roo, toggle, enum, #tab",
+              ProjectionExpression: "storeID, modelID, #nam, parent, #col, #roo, toggle, enum, #tab",
               ExpressionAttributeNames: {
                 "#nam": "name",
                 "#col": "column",

@@ -1,9 +1,17 @@
 import AWS from 'aws-sdk';
 import ids from 'shortid';
 
+const dotenvJSON = require("dotenv-json");
+dotenvJSON({ path: "./env.json"});
+
+console.log({
+  region: process.env.DEV_AWS_REGION || process.env.AWS_REGION,
+  endpoint: process.env.DEV_AWS_ENDPOINT || process.env.AWS_ENDPOINT
+});
+
 AWS.config.update({
-  region: process.env.AWS_REGION || "us-west-2",
-  endpoint: process.env.AWS_ENDPOINT || "http://localhost:8000"
+  region: process.env.DEV_AWS_REGION || process.env.AWS_REGION,
+  endpoint: process.env.DEV_AWS_ENDPOINT || process.env.AWS_ENDPOINT
 });
 
 let client = new AWS.DynamoDB.DocumentClient();
@@ -51,21 +59,14 @@ export default class Accessor {
     return new Promise((resolve, reject) => {
       let id = ids.generate();
       let key = ids.generate();
-      
-      console.log({
-        TableName: this.table,
-        Item: this.item(id, key, data)
-      });
 
       client.put({
         TableName: this.table,
         Item: this.item(id, key, data)
       }, err => {
         if (err) {
-          console.error('i errored out', err);
           reject(err);
         } else {
-          console.log('worked');
           let res = {};
           res[this.id] = data[this.id] || id;
           if (this.key) {
@@ -80,6 +81,8 @@ export default class Accessor {
 
   read(ID, KEY) {
     return new Promise((resolve, reject) => {
+      console.log('hey', ID, KEY);
+      console.log(this.gen(ID, KEY));
 
       client.get({
         TableName: this.table,
@@ -87,7 +90,9 @@ export default class Accessor {
       }, function(err, data) {
         if (err) {
           reject(err);
+          console.log('bad', err);
         } else {
+          console.log('good');
           resolve(data['Item']);
         }
       });

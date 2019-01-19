@@ -1,6 +1,6 @@
 import Store from './Store';
 import Accessor from '../database/Accessor';
-let ItemDB = new Accessor('items', 'storeID', 'itemID');
+let ModelDB = new Accessor('models', 'storeID', 'modelID');
 
 /*
   5 input types;
@@ -13,18 +13,18 @@ let ItemDB = new Accessor('items', 'storeID', 'itemID');
 */
 
 export default class Model {
-  constructor(data, read) {
+  constructor(data) {
     this.que = {};
 
     return new Promise((resolve, reject) => {
 
-      if (read) {
-        this.itemID = data.itemID;
+      if (data.modelID && data.storeID) {
+        this.modelID = data.modelID;
         this.storeID = data.storeID;
     
-        ItemDB.read(this.storeID, this.itemID).then(res => {
+        ModelDB.read(this.storeID, this.modelID).then(res => {
           this.data = res;
-
+          console.log('IM HERE DAWG', this.storeID, this.modelID);
           resolve(this);
         }).catch(err => {
           reject(err);
@@ -34,24 +34,24 @@ export default class Model {
         // DB cannot have null values
         let insert = {};
         insert.storeID = data.storeID || reject('No Store');
-        insert.itemID = data.itemID || reject('No Model ID');
-        insert.name = data.name || reject('No Model Display Name');
+        insert.name = data.name || reject('No Name');
         insert.parent = data.parent || reject('No Parent'); // EX: Size
+
         insert.row = data.row || {};
         insert.column = data.column || {};
         insert.table = data.table || {};
-        insert.enum = data.enum || {};
+        insert.enums = data.enums || {};
         insert.toggle = data.toggle || {};
         
-        ItemDB.create(insert).then(res => {
+        ModelDB.create(insert).then(res => {
           this.data = insert;
-          console.log('made', res);
+          
           new Store({
             storeID: res.storeID
           }).then(store => {
 
-            store.addModel(res.itemID).then(() => {
-              resolve();
+            store.addModel(res.modelID).then(() => {
+              resolve(res.modelID);
             }).catch(err => {
               reject(err);
             });
@@ -73,7 +73,7 @@ export default class Model {
     return new Promise((resolve, reject) => {
       let changes = this.que || {};
 
-      ItemDB.update(this.storeID, this.itemID, changes).then(() => {
+      ModelDB.update(this.storeID, this.modelID, changes).then(() => {
         
         Object.keys(changes).forEach(key => {
           this.data[key] = changes[key];
@@ -96,7 +96,39 @@ export default class Model {
     this.que['row'] = row;
   }
 
-  get name() {
+  get row() {
     return this.data.row;
+  }
+
+  set column(column) {
+    this.que['column'] = column;
+  }
+
+  get column() {
+    return this.data.column;
+  }
+
+  set table(table) {
+    this.que['table'] = table;
+  }
+
+  get table() {
+    return this.data.table;
+  }
+
+  set enums(enums) {
+    this.que['enum'] = enums;
+  }
+
+  get enums() {
+    return this.data.enum;
+  }
+
+  set toggle(toggle) {
+    this.que['toggle'] = toggle;
+  }
+
+  get toggle() {
+    return this.data.toggle;
   }
 }

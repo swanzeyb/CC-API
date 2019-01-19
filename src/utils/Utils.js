@@ -7,7 +7,7 @@ export function validateAddress(data) {
     Object.keys(data).forEach(key => {
       query = query + data[key].split(' ').join('+') + '+';
     });
-    query = 'https://maps.googleapis.com/maps/api/geocode/json?address=' + query + '&key=' + (process.env.MAPS_KEY || 'AIzaSyAzChoMdglfOkSHj1qVILLjTrspBUseZIw');
+    query = 'https://maps.googleapis.com/maps/api/geocode/json?address=' + query + '&key=' + process.env.MAPS_KEY;
         
     // Contact Google Maps API with the address
     fetch(query).then(res => {

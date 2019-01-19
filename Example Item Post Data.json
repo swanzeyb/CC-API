@@ -1,77 +1,63 @@
 {
-  "name": "Latte",
-  "desc": "foamy desire.",
+  "name": "Cordusio",
+  "desc": "mm caramel.",
+  "modelID": "HotDrinks",
   "marked": false,
   "context": "Drinks",
   "parent": "Hot Coffee",
   "child": "Lattes",
-  "base": {
-    "Size": "16oz"
-  },
-  "options": {
-    "Column": {
-      "Size": [
-        {
-          "part": "8oz",
-          "price": 200,
-          "limit": 1,
-          "qident": "false"
-        },
-        {
-          "part": "12oz",
-          "price": 220,
-          "limit": 1,
-          "qident": "false"
-        },
-        {
-          "part": "16oz",
-          "price": 240,
-          "limit": 1,
-          "qident": "false"
-        },
-        {
-          "part": "meta",
-          "selected": "12oz",
-          "amount": 1
-        }
-      ]
-    },
-    "Table": {
-      "Syrup": [
-        {
-          "part": "Vanilla",
-          "price": 60,
-          "limit": 10,
-          "qident": "Pumps"
-        },
-        {
-          "part": "Cinnamon",
-          "price": 60,
-          "limit": 10,
-          "qident": "Pumps"
-        },
-        {
-          "part": "Peppermint",
-          "price": 60,
-          "limit": 10,
-          "qident": "Pumps"
-        },
-        {
-          "part": "meta",
-          "selected": ["Vanilla"],
-          "amount": [1]
-        }
-      ]
-    },
-    "Row": {
-      "Espresso Shots": [
-        {
-          "part": "Espresso",
-          "mult": 80,
-          "limit": 1,
-          "qident": "Shots"
-        }
-      ]
+  "row": {
+    "Esspresso": {
+      "standard": {
+        "8oz": 2,
+        "12oz": 3,
+        "16oz": 4,
+        "20oz": 5
+      }
     }
+  },
+  "column": {
+    "Milk": {
+      "standard": {
+        "*": "Whole Milk"
+      }
+    }
+  },
+  "table": {
+    "Syrups": {
+      "standard": {
+        "dependent": true,
+        "8oz": [
+          {
+            "option": "Mocha",
+            "amount": 1
+          }
+        ],
+        "12oz": [
+          {
+            "option": "Mocha",
+            "amount": 2
+          }
+        ],
+        "16oz": [
+          {
+            "option": "Mocha",
+            "amount": 3
+          }
+        ],
+        "20oz": [
+          {
+            "option": "Mocha",
+            "amount": 4
+          }
+        ]
+      }
+    }
+  },
+  "enums": {
+
+  },
+  "toggle": {
+
   }
 }
